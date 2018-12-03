@@ -40,7 +40,7 @@
 			<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 				<name>^重新连线完毕。$</name>
 				<script>send("hp")
-send("l")</script>
+send("look")</script>
 				<triggerType>0</triggerType>
 				<conditonLineDelta>0</conditonLineDelta>
 				<mStayOpen>0</mStayOpen>
@@ -55,12 +55,12 @@ send("l")</script>
 					<string>^重新连线完毕。$</string>
 				</regexCodeList>
 				<regexCodePropertyList>
-					<integer>0</integer>
+					<integer>1</integer>
 				</regexCodePropertyList>
 			</Trigger>
 			<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 				<name>您要将另一个连线中的相同人物赶出去，取而代之吗？(y/n)</name>
-				<script>if isTakeOverChar then
+				<script>if player_settings["isTakeOverChar"] then
 	cecho("\n&lt;yellow&gt;取代在线人物。\n")
 	send("y")
 else
@@ -213,10 +213,33 @@ end</script>
 							<integer>1</integer>
 						</regexCodePropertyList>
 					</Trigger>
+					<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+						<name>^(\S+)丢下(.+)。$</name>
+						<script>send("get all")</script>
+						<triggerType>0</triggerType>
+						<conditonLineDelta>0</conditonLineDelta>
+						<mStayOpen>0</mStayOpen>
+						<mCommand></mCommand>
+						<packageName></packageName>
+						<mFgColor>#ff0000</mFgColor>
+						<mBgColor>#ffff00</mBgColor>
+						<mSoundFile></mSoundFile>
+						<colorTriggerFgColor>#000000</colorTriggerFgColor>
+						<colorTriggerBgColor>#000000</colorTriggerBgColor>
+						<regexCodeList>
+							<string>^(\S+)丢下(.+)。$</string>
+						</regexCodeList>
+						<regexCodePropertyList>
+							<integer>1</integer>
+						</regexCodePropertyList>
+					</Trigger>
 				</TriggerGroup>
 				<TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="yes" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 					<name>^你身上带著下列这些东西\(负重\s*(\d+)\%\)：</name>
-					<script>inventory = {}
+					<script>player_info["stats"]["负重"] = tonumber(matches[2])
+player_info["inventory"]["money"] = nil
+player_info["inventory"] = {}
+player_info["inventory"]["money"] = {}
 disableTrigger("捡钱")
 enableTrigger("身上")
 tempTimer(2, [[
@@ -234,7 +257,7 @@ tempTimer(2, [[
 					<colorTriggerFgColor>#000000</colorTriggerFgColor>
 					<colorTriggerBgColor>#000000</colorTriggerBgColor>
 					<regexCodeList>
-						<string>^你身上带著下列这些东西\(负重\s*(\d+)\%\)：</string>
+						<string>^你身上带著下列这些东西\(负重\s(\d+)\%\)：$</string>
 					</regexCodeList>
 					<regexCodePropertyList>
 						<integer>1</integer>
@@ -257,8 +280,9 @@ tempTimer(2, [[
 					<regexCodePropertyList />
 					<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 						<name>^  (.+)(两|张|文)(银子|黄金|银票|金票|钱)\((\w+)\)$</name>
-						<script>table.insert(player_info["inventory"], {id=matches[5]:lower(), name=matches[4], quant=matches[2]})
-</script>
+						<script>-- table.insert(player_info["inventory"]["money"], {id=matches[5]:lower(), name=matches[4], quant=convertCnNumberToArabic(matches[2])})
+local id=matches[5]:lower()
+player_info["inventory"]["money"][id]=convertCnNumberToArabic(matches[2])</script>
 						<triggerType>0</triggerType>
 						<conditonLineDelta>0</conditonLineDelta>
 						<mStayOpen>0</mStayOpen>
@@ -275,6 +299,27 @@ tempTimer(2, [[
 						</regexCodeList>
 						<regexCodePropertyList>
 							<integer>1</integer>
+							<integer>1</integer>
+						</regexCodePropertyList>
+					</Trigger>
+					<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+						<name>^\s+([^\s柄两只双把张文颗瓶本枚]+)\(([\w-]+)\)</name>
+						<script>table.insert(player_info["inventory"], {id=matches[3]:lower(), name=matches[2], quant=1})
+</script>
+						<triggerType>0</triggerType>
+						<conditonLineDelta>0</conditonLineDelta>
+						<mStayOpen>0</mStayOpen>
+						<mCommand></mCommand>
+						<packageName></packageName>
+						<mFgColor>#ff0000</mFgColor>
+						<mBgColor>#ffff00</mBgColor>
+						<mSoundFile></mSoundFile>
+						<colorTriggerFgColor>#000000</colorTriggerFgColor>
+						<colorTriggerBgColor>#000000</colorTriggerBgColor>
+						<regexCodeList>
+							<string>^\s+([^\s柄两只双把张文颗瓶本枚]+)\(([\w-]+)\)</string>
+						</regexCodeList>
+						<regexCodePropertyList>
 							<integer>1</integer>
 						</regexCodePropertyList>
 					</Trigger>
@@ -320,8 +365,8 @@ tempTimer(2, [[
 			<colorTriggerBgColor>#000000</colorTriggerBgColor>
 			<regexCodeList />
 			<regexCodePropertyList />
-			<TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-				<name>dali</name>
+			<TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="yes" isColorTriggerFg="yes" isColorTriggerBg="yes">
+				<name>dali_work</name>
 				<script></script>
 				<triggerType>0</triggerType>
 				<conditonLineDelta>0</conditonLineDelta>
@@ -331,61 +376,20 @@ tempTimer(2, [[
 				<mFgColor>#ff0000</mFgColor>
 				<mBgColor>#ffff00</mBgColor>
 				<mSoundFile></mSoundFile>
-				<colorTriggerFgColor>#000000</colorTriggerFgColor>
+				<colorTriggerFgColor>#00ff00</colorTriggerFgColor>
 				<colorTriggerBgColor>#000000</colorTriggerBgColor>
 				<regexCodeList />
 				<regexCodePropertyList />
 				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-					<name>^\s*你卷起袖子，帮着镖局里的伙计一起装卸货物。\s*$</name>
-					<script>tempTimer(15, [[send("work")]])</script>
-					<triggerType>0</triggerType>
-					<conditonLineDelta>0</conditonLineDelta>
-					<mStayOpen>0</mStayOpen>
-					<mCommand></mCommand>
-					<packageName></packageName>
-					<mFgColor>#ff0000</mFgColor>
-					<mBgColor>#ffff00</mBgColor>
-					<mSoundFile></mSoundFile>
-					<colorTriggerFgColor>#000000</colorTriggerFgColor>
-					<colorTriggerBgColor>#000000</colorTriggerBgColor>
-					<regexCodeList>
-						<string>^你卷起袖子，帮着镖局里的伙计一起装卸货物。\s*$</string>
-					</regexCodeList>
-					<regexCodePropertyList>
-						<integer>1</integer>
-					</regexCodePropertyList>
-				</Trigger>
-				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-					<name>^镖局里的伙计对你说道：.+，谢谢你帮了我们大忙，最近打工的人太多，只能给你这么多了。$</name>
-					<script>if killTimer(tempTimerID) then
-	echo("\nkilled temp timer\n")
-	send("work")
-end </script>
-					<triggerType>0</triggerType>
-					<conditonLineDelta>0</conditonLineDelta>
-					<mStayOpen>0</mStayOpen>
-					<mCommand></mCommand>
-					<packageName></packageName>
-					<mFgColor>#ff0000</mFgColor>
-					<mBgColor>#ffff00</mBgColor>
-					<mSoundFile></mSoundFile>
-					<colorTriggerFgColor>#000000</colorTriggerFgColor>
-					<colorTriggerBgColor>#000000</colorTriggerBgColor>
-					<regexCodeList>
-						<string>^镖局里的伙计对你说道：.+，谢谢你帮了我们大忙，最近打工的人太多，只能给你这么多了。$</string>
-					</regexCodeList>
-					<regexCodePropertyList>
-						<integer>1</integer>
-					</regexCodePropertyList>
-				</Trigger>
-				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 					<name>^你先歇一会儿吧！$</name>
 					<script>echo("\nWe must rest\n")
+disableTimer("workTimer")
+send("i")
 onGoing = "resting"
-goto(23, 18)
+walk(18,23)
 send("give 1 silver to waiter")
 speedwalk("1u1e")
-send("sle")</script>
+send("sleep")</script>
 					<triggerType>0</triggerType>
 					<conditonLineDelta>0</conditonLineDelta>
 					<mStayOpen>0</mStayOpen>
@@ -398,6 +402,40 @@ send("sle")</script>
 					<colorTriggerBgColor>#000000</colorTriggerBgColor>
 					<regexCodeList>
 						<string>^你先歇一会儿吧！$</string>
+					</regexCodeList>
+					<regexCodePropertyList>
+						<integer>1</integer>
+					</regexCodePropertyList>
+				</Trigger>
+				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+					<name>^你一觉醒来，觉得身体完全恢复了！$</name>
+					<script>send("i")
+
+if player_info["stats"]["负重"] &gt; 10 then
+  walk(19, 18)
+  tempTimer(2, [=[
+    totalDelay = deposit() + 3
+    tempTimer(totalDelay, [[
+    	walk(23, 19)
+    	enableTimer("workTimer")
+    ]])
+  ]=])
+else
+	walk(23, 18)
+	enableTimer("workTimer")
+end</script>
+					<triggerType>0</triggerType>
+					<conditonLineDelta>0</conditonLineDelta>
+					<mStayOpen>0</mStayOpen>
+					<mCommand></mCommand>
+					<packageName></packageName>
+					<mFgColor>#ff0000</mFgColor>
+					<mBgColor>#ffff00</mBgColor>
+					<mSoundFile></mSoundFile>
+					<colorTriggerFgColor>#000000</colorTriggerFgColor>
+					<colorTriggerBgColor>#000000</colorTriggerBgColor>
+					<regexCodeList>
+						<string>^你一觉醒来，觉得身体完全恢复了！$</string>
 					</regexCodeList>
 					<regexCodePropertyList>
 						<integer>1</integer>
@@ -447,11 +485,12 @@ player_info["当前房间"] = trim1(multimatches[1][2])</script>
 	</TriggerPackage>
 	<TimerPackage>
 		<Timer isActive="yes" isFolder="no" isTempTimer="no" isOffsetTimer="no">
-			<name>timerLast</name>
-			<script></script>
-			<command>hp</command>
+			<name>workTimer</name>
+			<script>if
+send("work")</script>
+			<command></command>
 			<packageName></packageName>
-			<time>00:00:34.000</time>
+			<time>00:00:03.000</time>
 		</Timer>
 	</TimerPackage>
 	<AliasPackage>
@@ -574,50 +613,76 @@ end
 					<script>display(player_info["当前房间"])
 if player_info["当前房间"] ~= nil then
 	if matches[2] ~= nil then
-		display(setRoomName(tonumber(matches[2]), player_info["当前房间"]))
+		local from = tonumber(matches[2])
+		display(setRoomName(from, player_info["当前房间"]))
+		centerview(from)
 	else
 		display(setRoomName(player_info["to"], player_info["当前房间"]))
+		centerview(player_info["to"])
 	end
+	
 end</script>
 					<command></command>
 					<packageName></packageName>
 					<regex>^ar\s*(\d*)$</regex>
 				</Alias>
 				<Alias isActive="yes" isFolder="no">
-					<name>goto room</name>
-					<script>local from = findRoomIDByName(player_info["当前房间"])
-if from ~= nil then
-	local to = tonumber(matches[2])
-	player_info["to"] = to
-	walk(from, to)
-else
-	cecho("\n&lt;red&gt;找不到房间ID!")
-end</script>
+					<name>^walk\s+(\d+)\s+(\d+)$</name>
+					<script>local to = tonumber(matches[2])
+local from = tonumber(matches[3])
+walk(to, from)</script>
 					<command></command>
 					<packageName></packageName>
-					<regex>^goto\s+(\d+)$</regex>
+					<regex>^walk\s+(\d+)\s+(\d+)$</regex>
 				</Alias>
 				<Alias isActive="yes" isFolder="no">
-					<name>^map\s+(\S+)$</name>
-					<script>if walkingTimerID then killTimer(walkingTimerID) end
+					<name>^walk\s+(\d+)$</name>
+					<script>local from = findRoomIDByName(player_info["当前房间"])
 
-roomName = currentRoomName
+if from == nil then
+	cecho("\n请使用walk &lt;to&gt; &lt;from&gt; 格式\n")
+else
+	local to = tonumber(matches[2])
+	walk(to, from)
+end
 
-local from = mapper["rooms"][currentRoomName]
-local to = tonumber(matches[2])
-goto(from, to)
 
-walkingTimerID = tempTimer(0.5, [[
-	cecho("&lt;red&gt;\n" .. roomName .. " vs " .. currentRoomName .. "\n")
-	
-	if not string.match(currentRoomName, roomName) then
-		mapper.rooms[currentRoomName] = to
-		display(mapper.rooms)
-	end
-]])</script>
+	</script>
 					<command></command>
 					<packageName></packageName>
-					<regex>^map\s+(\S+)$</regex>
+					<regex>^walk\s+(\d+)$</regex>
+				</Alias>
+				<Alias isActive="yes" isFolder="no">
+					<name>^test$</name>
+					<script>local i = 0
+local s = 0
+local totalDelay = 0
+for id,quantity in pairs(player_info["inventory"]["money"]) do
+	
+		s = i * 3
+		i = i + 1
+		display(s)
+		tempTimer(s, function() echo("deposit ".. quantity .. " " .. id) end)
+		totalDelay = totalDelay + s
+end	</script>
+					<command></command>
+					<packageName></packageName>
+					<regex>^test$</regex>
+				</Alias>
+			</AliasGroup>
+			<AliasGroup isActive="yes" isFolder="yes">
+				<name>task_switches</name>
+				<script></script>
+				<command></command>
+				<packageName></packageName>
+				<regex></regex>
+				<Alias isActive="yes" isFolder="no">
+					<name>start_work</name>
+					<script>enableTrigger("work")
+enableTimer("workTimer")</script>
+					<command></command>
+					<packageName></packageName>
+					<regex>^work$</regex>
 				</Alias>
 			</AliasGroup>
 		</AliasGroup>
@@ -739,11 +804,13 @@ end</script>
 --                                             --
 -- Note that you can also use external Scripts --
 -------------------------------------------------
+registerAnonymousEventHandler("sysDisconnectionEvent", "on_disconnect")
+registerAnonymousEventHandler("sysConnectionEvent", "on_connect")
 
 function on_disconnect(event, arg, profile)
   echo("Event: " .. event .. "\n")
 	
-	if autoReconnect then
+	if player_settings["autoReconnect"] then
 		reconnect()
 	end
 end
@@ -752,8 +819,7 @@ function on_connect(event, arg, profile)
 	init_global_variables()
 end
 
-registerAnonymousEventHandler("sysDisconnectionEvent", "on_disconnect")
-registerAnonymousEventHandler("sysConnectionEvent", "on_connect")</script>
+</script>
 				<eventHandlerList />
 			</Script>
 			<Script isActive="yes" isFolder="no">
@@ -767,9 +833,31 @@ registerAnonymousEventHandler("sysConnectionEvent", "on_connect")</script>
 
 player_info["stats"] = {}
 player_info["inventory"] = {}
+player_info["当前房间"] = nil
 
-player_info["当前房间"] = ""
-</script>
+cnDict = {}
+cnDict["digit"] = {
+	["〇"] = 0,
+	["零"] = 0,
+	["一"] = 1,
+	["二"] = 2,
+	["三"] = 3,
+	["四"] = 4,
+	["五"] = 5,
+	["六"] = 6,
+	["七"] = 7,
+	["八"] = 8,
+	["九"] = 9,
+	["十"] = 10,
+	["百"] = 100,
+	["千"] = 1000,
+	["万"] = 10000
+}
+
+game_params = {}
+game_params["unindexed_rooms"] = {"汴梁.大街", "黄土大道", "大路"}
+
+disableTimer("workTimer")</script>
 				<eventHandlerList />
 			</Script>
 		</ScriptGroup>
@@ -787,22 +875,23 @@ player_info["当前房间"] = ""
 -- Note that you can also use external Scripts --
 -------------------------------------------------
 
-function walk(from, to, backwards, delay, show)
-	if from == nil then
-		speedwalk(getSpeedWalkPath())
-	end
-	cecho("\n&lt;red&gt;"..from .. "-" .. to .. "\n")
-	if from == to or from == nil or to == nil or not getPath(from, to) then
-		return false
-	else
+function walk(to, from, backwards, delay, show)
+	if to == nil or from == nil then
+		if speedWalkPath == nil then
+			return
+		end
 		raiseEvent("onWalkBegin")
-				
-		-- for i = 1, #speedWalkDir do
-			-- stepToNextRoom(speedWalkDir[i], speedWalkPath[i])
-		-- end
 		speedwalk(getSpeedWalkPath(), backwards, delay, show)
-		centerview(to)
 		raiseEvent("onWalkComplete")
+	end
+	
+	cecho("\n&lt;red&gt;"..from .. "-" .. to .. "\n")
+	if getPath(from, to) then
+		raiseEvent("onWalkBegin")
+		speedwalk(getSpeedWalkPath(), backwards, delay, show)
+		raiseEvent("onWalkComplete")
+		centerview(to)
+		
 		return true
 	end
 end
@@ -811,20 +900,6 @@ function stepToNextRoom(dir, roomId)
 	send(dir)
 	centerview(roomId)
 end
-
--- function goto(from, to)
-	-- debugc("111")
-	-- if from == to or from == nil or to == nil or not getPath(from, to) then
-		-- return false
-	-- else
-		-- centerview(from)
-		-- gotoRoom(to)
-		-- for i = 1, #speedWalkDir do
-			-- send(speedWalkDir[i])
-		-- end
-		-- return true
-	-- end
--- end
 
 function doSpeedWalk()
   echo("Path we need to take: " .. table.concat(speedWalkDir, ", ") .. "\n")
@@ -840,6 +915,11 @@ function getSpeedWalkPath()
 end
 
 function findRoomIDByName(roomName)
+	if isRoomIndexed(player_info["当前房间"]) then
+		cecho("\n&lt;red&gt;当前房间&lt;&lt;" ..player_info["当前房间"].."&gt;&gt;为无法检索房间。\n")
+		return nil
+	end
+	
 	for id,name in pairs(getRooms()) do
 			if name ~= nil and string.match(name, roomName) then
 				cecho("\n&lt;red&gt;" .. name .. "(" .. id .. ")")
@@ -853,6 +933,15 @@ function displayAllRooms()
 	for id,name in pairs(getRooms()) do
 		cecho("\n&lt;red&gt;" .. name .. "(" .. id .. ")")
   end
+end
+
+function isRoomIndexed(roomName)
+	for i = 1, #game_params["unindexed_rooms"] do
+		if utf8.match(roomName, game_params["unindexed_rooms"][i]) then
+			return true
+		end
+  end
+	return false
 end
 </script>
 				<eventHandlerList />
@@ -915,24 +1004,58 @@ mapper.rooms = {
 -------------------------------------------------
 function trim1(s)
    return (s:gsub("^%s*(.-)%s*$", "%1"))
+end
+
+function convertCnNumberToArabic(s)
+	nums = s:split("万")
+	n1 = convertCnNumber(nums[1])
+	-- display(nums)
+	if nums[2] == nil then 
+		return n1
+	else
+		n2 = convertCnNumber(nums[2])
+		return n1*10000 + n2
+	end
+end
+
+function convertCnNumber(s)
+	-- display(s)
+	ans = 0
+	local pre = nil
+	for w in utf8.gmatch(s, "%w") do
+    n = cnDict["digit"][w]
+		if pre == nil and n == 10 then
+			ans = n
+		elseif n == 1000 or n == 100 or n == 10 then 
+    	ans = ans + n * pre    
+		end
+		pre = n		
+  end
+	if pre ~= nil and pre &lt; 10 then ans = ans + pre end
+	-- display(ans)
+	return ans
 end</script>
 				<eventHandlerList />
 			</Script>
-			<Script isActive="no" isFolder="no">
-				<name>item_utils</name>
+			<Script isActive="yes" isFolder="no">
+				<name>bank</name>
 				<packageName></packageName>
 				<script>-------------------------------------------------
 --         Put your Lua functions here.        --
 --                                             --
 -- Note that you can also use external Scripts --
 -------------------------------------------------
-function addItemToInventory(inventory, id, name, quantity)
-	if inventory == nil then
-		inventory = {}
-	end
-		
-	inventory[id].quantity = quantity
-	inventory[id].name = name
+function deposit()
+	local i = 0
+	local totalDelay = 0
+	local s = 0
+	for id,quantity in pairs(player_info["inventory"]["money"]) do
+		s = i * 3
+		i = i + 1
+		tempTimer(s, function() send("deposit ".. quantity .. " " .. id) end)
+		totalDelay = totalDelay + s
+	end	
+	return totalDelay
 end</script>
 				<eventHandlerList />
 			</Script>
@@ -1365,6 +1488,12 @@ end</script>
 			<keyType>4</keyType>
 			<value></value>
 			<valueType>5</valueType>
+			<Variable>
+				<name>autoReconnect</name>
+				<keyType>4</keyType>
+				<value>true</value>
+				<valueType>1</valueType>
+			</Variable>
 			<Variable>
 				<name>isTakeOverChar</name>
 				<keyType>4</keyType>

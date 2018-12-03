@@ -38,27 +38,6 @@
 				</regexCodePropertyList>
 			</Trigger>
 			<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-				<name>您的英文名字(新人登录请输入new)：</name>
-				<script>send(username)
-send(password)</script>
-				<triggerType>0</triggerType>
-				<conditonLineDelta>0</conditonLineDelta>
-				<mStayOpen>0</mStayOpen>
-				<mCommand></mCommand>
-				<packageName></packageName>
-				<mFgColor>#ff0000</mFgColor>
-				<mBgColor>#ffff00</mBgColor>
-				<mSoundFile></mSoundFile>
-				<colorTriggerFgColor>#000000</colorTriggerFgColor>
-				<colorTriggerBgColor>#000000</colorTriggerBgColor>
-				<regexCodeList>
-					<string>您的英文名字(新人登录请输入new)：</string>
-				</regexCodeList>
-				<regexCodePropertyList>
-					<integer>3</integer>
-				</regexCodePropertyList>
-			</Trigger>
-			<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 				<name>^重新连线完毕。$</name>
 				<script>send("hp")
 send("l")</script>
@@ -81,10 +60,12 @@ send("l")</script>
 			</Trigger>
 			<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 				<name>您要将另一个连线中的相同人物赶出去，取而代之吗？(y/n)</name>
-				<script>bg()
-if isTakeOverChar then
-	echo("\ntaking over character from game.\n")
+				<script>if isTakeOverChar then
+	cecho("\n&lt;yellow&gt;取代在线人物。\n")
 	send("y")
+else
+	cecho("\n&lt;yellow&gt;不会取代在线人物。退出游戏。\n")
+	disconnect()
 end</script>
 				<triggerType>0</triggerType>
 				<conditonLineDelta>0</conditonLineDelta>
@@ -136,7 +117,7 @@ end</script>
 				<regexCodePropertyList />
 				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="yes" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 					<name>parse_stats</name>
-					<script>stats = {
+					<script>player_info["stats"] = {
 	["精神"] = tonumber(multimatches[1][2]),
 	["最大精神"] = tonumber(multimatches[1][3]),
 	["精神百分比"] = tonumber(multimatches[1][4]),
@@ -154,11 +135,8 @@ end</script>
 	["饮水"] = tonumber(multimatches[4][2]),
 	["最大饮水"] = tonumber(multimatches[4][3]),
 	["经验"] = tonumber(multimatches[4][4])
-	
 }
-
--- echo("\n")
--- display(stats)</script>
+</script>
 					<triggerType>0</triggerType>
 					<conditonLineDelta>4</conditonLineDelta>
 					<mStayOpen>0</mStayOpen>
@@ -215,7 +193,9 @@ end</script>
 					<regexCodePropertyList />
 					<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 						<name>^  (.+)(两|张)(银子|黄金|银票|金票)\((\w+)\)$</name>
-						<script>if matches[5] ~= nil then send("get " .. matches[5]:lower()) end</script>
+						<script>if not string.match("钱", matches[4]) then 
+	send("get " .. matches[5]:lower())
+end</script>
 						<triggerType>0</triggerType>
 						<conditonLineDelta>0</conditonLineDelta>
 						<mStayOpen>0</mStayOpen>
@@ -227,17 +207,20 @@ end</script>
 						<colorTriggerFgColor>#000000</colorTriggerFgColor>
 						<colorTriggerBgColor>#000000</colorTriggerBgColor>
 						<regexCodeList>
-							<string>^  (.+)(两|张)(银子|黄金|银票|金票)\((\w+)\)$</string>
+							<string>^\s+(\S+)(两|张|文)(银子|黄金|银票|金票|钱)\(([\w-]+)\)$</string>
 						</regexCodeList>
 						<regexCodePropertyList>
 							<integer>1</integer>
 						</regexCodePropertyList>
 					</Trigger>
 				</TriggerGroup>
-				<TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+				<TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="yes" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 					<name>^你身上带著下列这些东西\(负重\s*(\d+)\%\)：</name>
-					<script>disableTrigger("捡钱")
-tempTimer(5, [[
+					<script>inventory = {}
+disableTrigger("捡钱")
+enableTrigger("身上")
+tempTimer(2, [[
+	disableTrigger("身上")
 	enableTrigger("捡钱")
 ]])</script>
 					<triggerType>0</triggerType>
@@ -256,9 +239,26 @@ tempTimer(5, [[
 					<regexCodePropertyList>
 						<integer>1</integer>
 					</regexCodePropertyList>
-					<TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-						<name>身上</name>
-						<script></script>
+				</TriggerGroup>
+				<TriggerGroup isActive="no" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+					<name>身上</name>
+					<script></script>
+					<triggerType>0</triggerType>
+					<conditonLineDelta>0</conditonLineDelta>
+					<mStayOpen>0</mStayOpen>
+					<mCommand></mCommand>
+					<packageName></packageName>
+					<mFgColor>#ff0000</mFgColor>
+					<mBgColor>#ffff00</mBgColor>
+					<mSoundFile></mSoundFile>
+					<colorTriggerFgColor>#000000</colorTriggerFgColor>
+					<colorTriggerBgColor>#000000</colorTriggerBgColor>
+					<regexCodeList />
+					<regexCodePropertyList />
+					<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+						<name>^  (.+)(两|张|文)(银子|黄金|银票|金票|钱)\((\w+)\)$</name>
+						<script>table.insert(player_info["inventory"], {id=matches[5]:lower(), name=matches[4], quant=matches[2]})
+</script>
 						<triggerType>0</triggerType>
 						<conditonLineDelta>0</conditonLineDelta>
 						<mStayOpen>0</mStayOpen>
@@ -269,29 +269,15 @@ tempTimer(5, [[
 						<mSoundFile></mSoundFile>
 						<colorTriggerFgColor>#000000</colorTriggerFgColor>
 						<colorTriggerBgColor>#000000</colorTriggerBgColor>
-						<regexCodeList />
-						<regexCodePropertyList />
-						<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-							<name>^  (.+)(两|张|文)(银子|黄金|银票|金票|钱)\((\w+)\)$</name>
-							<script></script>
-							<triggerType>0</triggerType>
-							<conditonLineDelta>0</conditonLineDelta>
-							<mStayOpen>0</mStayOpen>
-							<mCommand></mCommand>
-							<packageName></packageName>
-							<mFgColor>#ff0000</mFgColor>
-							<mBgColor>#ffff00</mBgColor>
-							<mSoundFile></mSoundFile>
-							<colorTriggerFgColor>#000000</colorTriggerFgColor>
-							<colorTriggerBgColor>#000000</colorTriggerBgColor>
-							<regexCodeList>
-								<string>^  (.+)(两|张|文)(银子|黄金|银票|金票|钱)\((\w+)\)$</string>
-							</regexCodeList>
-							<regexCodePropertyList>
-								<integer>1</integer>
-							</regexCodePropertyList>
-						</Trigger>
-					</TriggerGroup>
+						<regexCodeList>
+							<string>^\s+(\S+)(两|张|文)(银子|黄金|银票|金票|钱)\(([\w-]+)\)$</string>
+							<string>^\s+(\S+)(个|瓶|只|把|柄|件|枚|本)(\S+)\(([\w-]+)\)$</string>
+						</regexCodeList>
+						<regexCodePropertyList>
+							<integer>1</integer>
+							<integer>1</integer>
+						</regexCodePropertyList>
+					</Trigger>
 				</TriggerGroup>
 			</TriggerGroup>
 			<TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
@@ -437,12 +423,7 @@ send("sle")</script>
 			<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="yes" isPerlSlashGOption="yes" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 				<name>parse_room</name>
 				<script>-- showMultimatches()
-
-currentRoomName = trim1(multimatches[1][2])
--- debug("\nCurrent Room: " .. currentRoomName)
--- if not rooms[currentRoomName] then
-	-- echo("\nnil")
--- end</script>
+player_info["当前房间"] = trim1(multimatches[1][2])</script>
 				<triggerType>0</triggerType>
 				<conditonLineDelta>10</conditonLineDelta>
 				<mStayOpen>0</mStayOpen>
@@ -559,81 +540,6 @@ raiseGlobalEvent("sysSendAllProfiles", matches[2])
 				<command></command>
 				<packageName></packageName>
 				<regex></regex>
-				<Alias isActive="yes" isFolder="no">
-					<name>parse_id</name>
-					<script>parsedID = getID(line)
-
-function getID(str)
-	i1 = string.find(str, "%(")
-	i2 = string.find(str, "%)", -1)
-
-	if i1 and i2 then
-		return string.lower(string.sub(str, i1 +1, i2-1))
-	else
-		return nil
-	end
-end</script>
-					<command></command>
-					<packageName></packageName>
-					<regex>^parseid$</regex>
-				</Alias>
-				<Alias isActive="yes" isFolder="no">
-					<name>set target</name>
-					<script>target = matches[2]
-cecho("&lt;light_slate_blue&gt;My target is now: &lt;red&gt;"..target.."\n")</script>
-					<command></command>
-					<packageName></packageName>
-					<regex>^t (.+)$</regex>
-				</Alias>
-				<Alias isActive="no" isFolder="no">
-					<name>drink</name>
-					<script>send("drink "..target)</script>
-					<command></command>
-					<packageName></packageName>
-					<regex>^drink$</regex>
-				</Alias>
-				<Alias isActive="yes" isFolder="no">
-					<name>parse_money</name>
-					<script>function getID(str)
-	i1 = string.find(str, "%(")
-	i2 = string.find(str, "%)", -1)
-
-	if i1 and i2 then
-		return string.lower(string.sub(str, i1 +1, i2-1))
-	else
-		return nil
-	end
-end
-
-function parseMoney(str)
-	echo("\n123\n")
-	return str
-end
-
-tempTriggerID = tempTrigger(
-
-
-
-
-</script>
-					<command></command>
-					<packageName></packageName>
-					<regex>^parsemoney$</regex>
-				</Alias>
-			</AliasGroup>
-			<AliasGroup isActive="yes" isFolder="yes">
-				<name>paths</name>
-				<script></script>
-				<command></command>
-				<packageName></packageName>
-				<regex></regex>
-				<Alias isActive="yes" isFolder="no">
-					<name>开封-大理</name>
-					<script></script>
-					<command></command>
-					<packageName></packageName>
-					<regex>^kf2dl$</regex>
-				</Alias>
 			</AliasGroup>
 			<AliasGroup isActive="yes" isFolder="yes">
 				<name>mapper</name>
@@ -657,18 +563,6 @@ end
 					<regex>^createroom$</regex>
 				</Alias>
 				<Alias isActive="yes" isFolder="no">
-					<name>^addroom\s+(\d+)$</name>
-					<script>echo("\nAdding room: " .. matches[2] .. "\n")
--- local rooms_ref = mapper["rooms"]
--- rooms_ref[currentRoomName] = tonumber(matches[2])
-local roomID = tonumber(matches[2])
-mapper["rooms"][currentRoomName] = roomID
-setRoomName(roomID, currentRoomName)</script>
-					<command></command>
-					<packageName></packageName>
-					<regex>^addroom\s+(\d+)$</regex>
-				</Alias>
-				<Alias isActive="yes" isFolder="no">
 					<name>savemap</name>
 					<script>saveMap()</script>
 					<command></command>
@@ -677,27 +571,53 @@ setRoomName(roomID, currentRoomName)</script>
 				</Alias>
 				<Alias isActive="yes" isFolder="no">
 					<name>^addroom$</name>
-					<script>if mapper["rooms"][currentRoomName] == nil then
-	
-	local newRoomID = createRoomID()
-	echo("\nAdding  " .. currentRoomName.."(" .. newRoomID..")\n")
-	mapper["rooms"][currentRoomName] = newRoomID
-	addRoom(newRoomID)
-	setRoomName(newRoomID, currentRoomName)
-	
+					<script>display(player_info["当前房间"])
+if player_info["当前房间"] ~= nil then
+	if matches[2] ~= nil then
+		display(setRoomName(tonumber(matches[2]), player_info["当前房间"]))
+	else
+		display(setRoomName(player_info["to"], player_info["当前房间"]))
+	end
 end</script>
 					<command></command>
 					<packageName></packageName>
-					<regex>^addroom$</regex>
+					<regex>^ar\s*(\d*)$</regex>
 				</Alias>
 				<Alias isActive="yes" isFolder="no">
 					<name>goto room</name>
-					<script>	local from = mapper["rooms"][currentRoomName]
+					<script>local from = findRoomIDByName(player_info["当前房间"])
+if from ~= nil then
 	local to = tonumber(matches[2])
-	goto(from, to)</script>
+	player_info["to"] = to
+	walk(from, to)
+else
+	cecho("\n&lt;red&gt;找不到房间ID!")
+end</script>
 					<command></command>
 					<packageName></packageName>
 					<regex>^goto\s+(\d+)$</regex>
+				</Alias>
+				<Alias isActive="yes" isFolder="no">
+					<name>^map\s+(\S+)$</name>
+					<script>if walkingTimerID then killTimer(walkingTimerID) end
+
+roomName = currentRoomName
+
+local from = mapper["rooms"][currentRoomName]
+local to = tonumber(matches[2])
+goto(from, to)
+
+walkingTimerID = tempTimer(0.5, [[
+	cecho("&lt;red&gt;\n" .. roomName .. " vs " .. currentRoomName .. "\n")
+	
+	if not string.match(currentRoomName, roomName) then
+		mapper.rooms[currentRoomName] = to
+		display(mapper.rooms)
+	end
+]])</script>
+					<command></command>
+					<packageName></packageName>
+					<regex>^map\s+(\S+)$</regex>
 				</Alias>
 			</AliasGroup>
 		</AliasGroup>
@@ -828,7 +748,28 @@ function on_disconnect(event, arg, profile)
 	end
 end
 
-registerAnonymousEventHandler("sysDisconnectionEvent", "on_disconnect")</script>
+function on_connect(event, arg, profile)
+	init_global_variables()
+end
+
+registerAnonymousEventHandler("sysDisconnectionEvent", "on_disconnect")
+registerAnonymousEventHandler("sysConnectionEvent", "on_connect")</script>
+				<eventHandlerList />
+			</Script>
+			<Script isActive="yes" isFolder="no">
+				<name>init_global_variables</name>
+				<packageName></packageName>
+				<script>-------------------------------------------------
+--         Put your Lua functions here.        --
+--                                             --
+-- Note that you can also use external Scripts --
+-------------------------------------------------
+
+player_info["stats"] = {}
+player_info["inventory"] = {}
+
+player_info["当前房间"] = ""
+</script>
 				<eventHandlerList />
 			</Script>
 		</ScriptGroup>
@@ -838,43 +779,6 @@ registerAnonymousEventHandler("sysDisconnectionEvent", "on_disconnect")</script>
 			<script></script>
 			<eventHandlerList />
 			<Script isActive="yes" isFolder="no">
-				<name>mapper_tryout</name>
-				<packageName></packageName>
-				<script>-------------------------------------------------
---         Put your Lua functions here.        --
---                                             --
--- Note that you can also use external Scripts --
--------------------------------------------------
-mudlet = mudlet or {}; mudlet.mapper_script = true
-
-function doSpeedWalk()
-  echo("Path we need to take: " .. table.concat(speedWalkDir, ", ") .. "\n")
-  echo("Rooms we'll pass through: " .. table.concat(speedWalkPath, ", ") .. "\n")
-end
-
-function createRoom(mydb, roomName)
-	if roomName == nil then
-		return
-	end
-	
-	
-	if (mydb == nil) then
-		return
-	end
-	
-	-- db:fetch(mydb.rooms, db:eq(mydb.rooms.name, roomName))
-end
-
-function addRoom(mydb, roomId, roomName)
-	if roomId or roomName == nil then
-		return
-	end
-	
-	db:add(mydb.rooms, {name=roomName, room_id=roomId})
-end</script>
-				<eventHandlerList />
-			</Script>
-			<Script isActive="yes" isFolder="no">
 				<name>mapper_utils</name>
 				<packageName></packageName>
 				<script>-------------------------------------------------
@@ -883,22 +787,72 @@ end</script>
 -- Note that you can also use external Scripts --
 -------------------------------------------------
 
-function goto(from, to)
+function walk(from, to, backwards, delay, show)
+	if from == nil then
+		speedwalk(getSpeedWalkPath())
+	end
+	cecho("\n&lt;red&gt;"..from .. "-" .. to .. "\n")
 	if from == to or from == nil or to == nil or not getPath(from, to) then
 		return false
 	else
-		centerview(from)
-		gotoRoom(to)
-		for i = 1, #speedWalkDir do
-			send(speedWalkDir[i])
-		end
+		raiseEvent("onWalkBegin")
+				
+		-- for i = 1, #speedWalkDir do
+			-- stepToNextRoom(speedWalkDir[i], speedWalkPath[i])
+		-- end
+		speedwalk(getSpeedWalkPath(), backwards, delay, show)
+		centerview(to)
+		raiseEvent("onWalkComplete")
 		return true
 	end
 end
 
+function stepToNextRoom(dir, roomId)
+	send(dir)
+	centerview(roomId)
+end
+
+-- function goto(from, to)
+	-- debugc("111")
+	-- if from == to or from == nil or to == nil or not getPath(from, to) then
+		-- return false
+	-- else
+		-- centerview(from)
+		-- gotoRoom(to)
+		-- for i = 1, #speedWalkDir do
+			-- send(speedWalkDir[i])
+		-- end
+		-- return true
+	-- end
+-- end
+
 function doSpeedWalk()
   echo("Path we need to take: " .. table.concat(speedWalkDir, ", ") .. "\n")
   echo("Rooms we'll pass through: " .. table.concat(speedWalkPath, ", ") .. "\n")
+end
+
+function getSpeedWalkPath()
+	local speedWalkPath = ""
+	for i = 1, #speedWalkDir do			
+			speedWalkPath = speedWalkPath .. "1" .. speedWalkDir[i]
+	end
+	return speedWalkPath
+end
+
+function findRoomIDByName(roomName)
+	for id,name in pairs(getRooms()) do
+			if name ~= nil and string.match(name, roomName) then
+				cecho("\n&lt;red&gt;" .. name .. "(" .. id .. ")")
+				return id
+			end
+  end
+	return nil
+end
+
+function displayAllRooms()
+	for id,name in pairs(getRooms()) do
+		cecho("\n&lt;red&gt;" .. name .. "(" .. id .. ")")
+  end
 end
 </script>
 				<eventHandlerList />
@@ -942,9 +896,19 @@ mapper.rooms = {
 			</Script>
 		</ScriptGroup>
 		<ScriptGroup isActive="yes" isFolder="yes">
-			<name>utils</name>
+			<name>commons</name>
 			<packageName></packageName>
 			<script>-------------------------------------------------
+--         Put your Lua functions here.        --
+--                                             --
+-- Note that you can also use external Scripts --
+-------------------------------------------------
+</script>
+			<eventHandlerList />
+			<Script isActive="yes" isFolder="no">
+				<name>utils</name>
+				<packageName></packageName>
+				<script>-------------------------------------------------
 --         Put your Lua functions here.        --
 --                                             --
 -- Note that you can also use external Scripts --
@@ -952,7 +916,26 @@ mapper.rooms = {
 function trim1(s)
    return (s:gsub("^%s*(.-)%s*$", "%1"))
 end</script>
-			<eventHandlerList />
+				<eventHandlerList />
+			</Script>
+			<Script isActive="no" isFolder="no">
+				<name>item_utils</name>
+				<packageName></packageName>
+				<script>-------------------------------------------------
+--         Put your Lua functions here.        --
+--                                             --
+-- Note that you can also use external Scripts --
+-------------------------------------------------
+function addItemToInventory(inventory, id, name, quantity)
+	if inventory == nil then
+		inventory = {}
+	end
+		
+	inventory[id].quantity = quantity
+	inventory[id].name = name
+end</script>
+				<eventHandlerList />
+			</Script>
 		</ScriptGroup>
 	</ScriptPackage>
 	<KeyPackage>
@@ -1058,6 +1041,12 @@ end</script>
 				<value></value>
 				<valueType>5</valueType>
 				<Variable>
+					<name>大理东街１</name>
+					<keyType>4</keyType>
+					<value>10</value>
+					<valueType>3</valueType>
+				</Variable>
+				<Variable>
 					<name>大理西街２</name>
 					<keyType>4</keyType>
 					<value>15</value>
@@ -1070,9 +1059,21 @@ end</script>
 					<valueType>3</valueType>
 				</Variable>
 				<Variable>
+					<name>大理北街３</name>
+					<keyType>4</keyType>
+					<value>4</value>
+					<valueType>3</valueType>
+				</Variable>
+				<Variable>
 					<name>大理西街４</name>
 					<keyType>4</keyType>
 					<value>17</value>
+					<valueType>3</valueType>
+				</Variable>
+				<Variable>
+					<name>大理东街３</name>
+					<keyType>4</keyType>
+					<value>12</value>
 					<valueType>3</valueType>
 				</Variable>
 				<Variable>
@@ -1088,39 +1089,9 @@ end</script>
 					<valueType>3</valueType>
 				</Variable>
 				<Variable>
-					<name>大理东街４</name>
+					<name>大理南街１</name>
 					<keyType>4</keyType>
-					<value>13</value>
-					<valueType>3</valueType>
-				</Variable>
-				<Variable>
-					<name>大理南街４</name>
-					<keyType>4</keyType>
-					<value>9</value>
-					<valueType>3</valueType>
-				</Variable>
-				<Variable>
-					<name>大理北街４</name>
-					<keyType>4</keyType>
-					<value>5</value>
-					<valueType>3</valueType>
-				</Variable>
-				<Variable>
-					<name>大理北街３</name>
-					<keyType>4</keyType>
-					<value>4</value>
-					<valueType>3</valueType>
-				</Variable>
-				<Variable>
-					<name>大理东街３</name>
-					<keyType>4</keyType>
-					<value>12</value>
-					<valueType>3</valueType>
-				</Variable>
-				<Variable>
-					<name>大理东街１</name>
-					<keyType>4</keyType>
-					<value>10</value>
+					<value>6</value>
 					<valueType>3</valueType>
 				</Variable>
 				<Variable>
@@ -1136,9 +1107,9 @@ end</script>
 					<valueType>3</valueType>
 				</Variable>
 				<Variable>
-					<name>大理北街１</name>
+					<name>大理北街２</name>
 					<keyType>4</keyType>
-					<value>2</value>
+					<value>3</value>
 					<valueType>3</valueType>
 				</Variable>
 				<Variable>
@@ -1148,21 +1119,33 @@ end</script>
 					<valueType>3</valueType>
 				</Variable>
 				<Variable>
-					<name>大理南街１</name>
+					<name>大理东街４</name>
 					<keyType>4</keyType>
-					<value>6</value>
-					<valueType>3</valueType>
-				</Variable>
-				<Variable>
-					<name>大理北街２</name>
-					<keyType>4</keyType>
-					<value>3</value>
+					<value>13</value>
 					<valueType>3</valueType>
 				</Variable>
 				<Variable>
 					<name>大理西街３</name>
 					<keyType>4</keyType>
 					<value>16</value>
+					<valueType>3</valueType>
+				</Variable>
+				<Variable>
+					<name>大理北街４</name>
+					<keyType>4</keyType>
+					<value>5</value>
+					<valueType>3</valueType>
+				</Variable>
+				<Variable>
+					<name>大理南街４</name>
+					<keyType>4</keyType>
+					<value>9</value>
+					<valueType>3</valueType>
+				</Variable>
+				<Variable>
+					<name>大理北街１</name>
+					<keyType>4</keyType>
+					<value>2</value>
 					<valueType>3</valueType>
 				</Variable>
 			</VariableGroup>
@@ -1376,6 +1359,18 @@ end</script>
 					<valueType>3</valueType>
 				</Variable>
 			</VariableGroup>
+		</VariableGroup>
+		<VariableGroup>
+			<name>player_settings</name>
+			<keyType>4</keyType>
+			<value></value>
+			<valueType>5</valueType>
+			<Variable>
+				<name>isTakeOverChar</name>
+				<keyType>4</keyType>
+				<value>true</value>
+				<valueType>1</valueType>
+			</Variable>
 		</VariableGroup>
 		<VariableGroup>
 			<name>usr</name>
